@@ -1,0 +1,102 @@
+// RealityTest — hackathon MVP schema (SQLite).
+// See docs/ARCHITECTURE.md for production limits of this setup.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+/// Anonymous guest session identified by a signed HttpOnly cookie (TEST-MODE demo only).
+model GuestSession {
+  id        String          @id
+  createdAt DateTime        @default(now())
+  jobs      EvaluationJob[]
+  ledger    CreditLedger[]
+  checkouts CheckoutRecord[]
+}
+
+/// Durable evaluation job processed by the worker (src/worker).
+model EvaluationJob {
+  id              String    @id
+  sessionId       String
+  session         GuestSession @relation(fields: [sessionId], references: [id])
+  /// Client-supplied idempotency key: retries of the same submission reuse the job.
+  idempotencyKey  String?
+  /// pending | running | completed | failed
+  status          String    @default("pending")
+  progress        Int       @default(0)
+  progressMessage String?
+  /// "live" (real Meta SAM 3.1 call) or "fixture" (recorded API output replay)
+  mode            String
+  /// Provenance actually used to produce the tracking data ("live" | "fixture"); null until known.
+  provenance      String?
+  objectPrompt    String
+  targetLabel     String?
+  /// JSON: TargetZone (source pixels)
+  targetZone      String
+  /// "upload" or sample id
+  source          String
+  videoPath       String
+  videoName       String
+  /// JSON: VideoInfo
+  videoInfo       String
+  /// JSON: TrackingResult without rawOutput
+  tracking        String?
+  /// JSON: EvaluationResult
+  result          String?
+  verdict         String?
+  errorCode       String?
+  error           String?
+  /// Whether this job consumed a paid credit (vs. free allowance / fixture)
+  billing         String    @default("free")
+  attempts        Int       @default(0)
+  workerId        String?
+  claimedAt       DateTime?
+  startedAt       DateTime?
+  completedAt     DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@unique([sessionId, idempotencyKey])
+  @@index([status, createdAt])
+}
+
+/// Append-only credit ledger. Balance = SUM(delta).
+model CreditLedger {
+  id               String   @id @default(cuid())
+  sessionId        String
+  session          GuestSession @relation(fields: [sessionId], references: [id])
+  delta            Int
+  /// stripe_purchase | evaluation_debit | evaluation_refund
+  reason           String
+  /// Unique: one grant per Stripe Checkout Session, even if several events arrive.
+  stripeCheckoutId String?  @unique
+  /// Unique per (jobId, reason): a job can be debited once and refunded once.
+  jobId            String?
+  createdAt        DateTime @default(now())
+
+  @@unique([jobId, reason])
+  @@index([sessionId])
+}
+
+/// Processed Stripe webhook events (idempotency).
+model StripeEvent {
+  id          String   @id
+  type        String
+  processedAt DateTime @default(now())
+}
+
+/// Checkout Sessions created by this app (for status display; never grants credits by itself).
+model CheckoutRecord {
+  id          String   @id
+  sessionId   String
+  session     GuestSession @relation(fields: [sessionId], references: [id])
+  /// open | paid | awaiting_payment | failed | expired
+  status      String   @default("open")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}

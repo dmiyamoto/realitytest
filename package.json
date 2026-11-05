@@ -1,0 +1,48 @@
+{
+  "name": "realitytest",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "sam:probe": "tsx scripts/sam-probe.ts",
+    "test": "vitest run",
+    "typecheck": "next typegen && tsc --noEmit",
+    "db:push": "prisma db push",
+    "worker": "tsx src/worker/index.ts",
+    "postinstall": "prisma generate",
+    "clips": "python3 -I scripts/make-synthetic-clips.py public/samples",
+    "test:e2e": "playwright test",
+    "stripe:setup": "tsx scripts/stripe-setup.ts",
+    "dev:worker": "tsx watch src/worker/index.ts"
+  },
+  "dependencies": {
+    "@meta-sam/parser": "0.1.0",
+    "@prisma/client": "6.19.3",
+    "next": "16.4.4",
+    "openai": "^7.47.0",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "stripe": "^23.1.0",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.64.1",
+    "@tailwindcss/turbopack": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@vitejs/plugin-react": "^6.2.1",
+    "eslint": "^9",
+    "eslint-config-next": "16.4.4",
+    "prisma": "6.19.3",
+    "tailwindcss": "^4",
+    "tsx": "^4.23.15",
+    "typescript": "^5",
+    "vite-tsconfig-paths": "^6.1.1",
+    "vitest": "^5.1.0"
+  },
+  "packageManager": "pnpm@10.34.5"
+}

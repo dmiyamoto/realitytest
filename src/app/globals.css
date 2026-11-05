@@ -1,0 +1,69 @@
+@import "tailwindcss";
+
+:root {
+  --bg: #07090c;
+  --panel: #0d1116;
+  --panel-2: #121821;
+  --line: #1d2530;
+  --line-2: #2a3441;
+  --fg: #e7edf3;
+  --muted: #8b97a6;
+  --pass: #22c55e;
+  --fail: #f43f5e;
+  --inc: #f59e0b;
+  --sam: #38bdf8;
+  --zone: #a78bfa;
+  --accent: #d4ff3f;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-panel: var(--panel);
+  --color-panel-2: var(--panel-2);
+  --color-line: var(--line);
+  --color-line-2: var(--line-2);
+  --color-fg: var(--fg);
+  --color-muted: var(--muted);
+  --color-pass: var(--pass);
+  --color-fail: var(--fail);
+  --color-inc: var(--inc);
+  --color-sam: var(--sam);
+  --color-zone: var(--zone);
+  --color-accent: var(--accent);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+}
+
+.grid-bg {
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+
+.glow-accent {
+  box-shadow: 0 0 0 1px rgba(212, 255, 63, 0.35), 0 10px 40px -10px rgba(212, 255, 63, 0.35);
+}
+
+@keyframes scan {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100%); }
+}
+.scanline::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, transparent, rgba(56, 189, 248, 0.08), transparent);
+  animation: scan 3.2s linear infinite;
+  pointer-events: none;
+}
