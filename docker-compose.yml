@@ -1,0 +1,35 @@
+# docker compose up --build
+# Put secrets in .env.local (never committed). See env.example.
+services:
+  web:
+    build: .
+    ports:
+      - "3000:3000"
+    env_file:
+      - path: .env.local
+        required: false
+    environment:
+      DATABASE_URL: file:/data/realitytest.db
+      STORAGE_DIR: /data/storage
+      NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-http://localhost:3000}
+    volumes:
+      - realitytest-data:/data
+    restart: unless-stopped
+
+  worker:
+    build: .
+    command: ["sh", "-c", "node_modules/.bin/prisma db push --skip-generate && node_modules/.bin/tsx src/worker/index.ts"]
+    env_file:
+      - path: .env.local
+        required: false
+    environment:
+      DATABASE_URL: file:/data/realitytest.db
+      STORAGE_DIR: /data/storage
+    volumes:
+      - realitytest-data:/data
+    depends_on:
+      - web
+    restart: unless-stopped
+
+volumes:
+  realitytest-data:
